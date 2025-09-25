@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{{ subnet.cidr }} · IPAM{% endblock %}
+{% block content %}
+<section class="panel">
+  <header class="panel-header">
+    <div>
+      <h2>Subnet {{ subnet.cidr }}</h2>
+      <p class="muted">{{ subnet.description or 'No description provided' }}</p>
+    </div>
+    <form action="/subnets/{{ subnet.id }}/delete" method="post" onsubmit="return confirm('Delete subnet and all allocations?');">
+      <button type="submit" class="button danger">Delete subnet</button>
+    </form>
+  </header>
+  {% if message %}
+  <div class="notice">{{ message }}</div>
+  {% endif %}
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+  <div class="grid">
+    <article class="card">
+      <h3>Summary</h3>
+      <ul class="stats">
+        <li><span>Netmask</span><code>{{ subnet.network.netmask }}</code></li>
+        <li><span>Broadcast</span><code>{{ subnet.network.broadcast_address }}</code></li>
+        <li><span>Usable hosts</span>{{ subnet.capacity }}</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h3>Allocation</h3>
+      {% set allocated = subnet.ip_addresses | length %}
+      <ul class="stats">
+        <li><span>Allocated</span>{{ allocated }}</li>
+        <li><span>Available</span>{{ subnet.capacity - allocated }}</li>
+        <li><span>Owner</span>{{ subnet.owner.username }}</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section class="panel">
+  <header class="panel-header">
+    <div>
+      <h3>Allocate IP address</h3>
+      <p class="muted">Leave the address blank to assign the next available host.</p>
+    </div>
+  </header>
+  <form action="/subnets/{{ subnet.id }}/allocate" method="post" class="form grid">
+    <div>
+      <label for="ip_address_value">IP address</label>
+      <input type="text" id="ip_address_value" name="ip_address_value" placeholder="Auto assign" />
+    </div>
+    <div>
+      <label for="hostname">Hostname</label>
+      <input type="text" id="hostname" name="hostname" placeholder="device.example.com" />
+    </div>
+    <div>
+      <label for="allocated_to">Allocated to</label>
+      <input type="text" id="allocated_to" name="allocated_to" placeholder="Team / owner" />
+    </div>
+    <div class="full">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="2" placeholder="Optional notes"></textarea>
+    </div>
+    <div class="full align-right">
+      <button type="submit" class="button">Allocate</button>
+    </div>
+  </form>
+</section>
+
+<section class="panel">
+  <header class="panel-header">
+    <div>
+      <h3>Allocations</h3>
+      <p class="muted">{{ subnet.ip_addresses | length }} active assignment(s)</p>
+    </div>
+  </header>
+  {% if subnet.ip_addresses %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Address</th>
+        <th>Hostname</th>
+        <th>Allocated to</th>
+        <th>Notes</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ip in subnet.ip_addresses|sort(attribute='address') %}
+      <tr>
+        <td><code>{{ ip.address }}</code></td>
+        <td>{{ ip.hostname or '—' }}</td>
+        <td>{{ ip.allocated_to or '—' }}</td>
+        <td>{{ ip.notes or '—' }}</td>
+        <td>
+          <form action="/subnets/{{ subnet.id }}/release/{{ ip.id }}" method="post" onsubmit="return confirm('Release {{ ip.address }}?');">
+            <button type="submit" class="button secondary small">Release</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No allocations yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

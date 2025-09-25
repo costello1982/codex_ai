@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Subnet calculator · IPAM{% endblock %}
+{% block content %}
+<section class="panel">
+  <header class="panel-header">
+    <div>
+      <h2>Subnet calculator</h2>
+      <p class="muted">Enter a CIDR to inspect usable host counts and boundaries.</p>
+    </div>
+  </header>
+  <form action="/calculator" method="get" class="form inline">
+    <label for="cidr" class="sr-only">CIDR</label>
+    <input type="text" id="cidr" name="cidr" placeholder="172.16.10.0/26" value="{{ request.query_params.get('cidr', '') }}" />
+    <button type="submit" class="button">Calculate</button>
+  </form>
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+  {% if details %}
+  <div class="grid">
+    <article class="card">
+      <h3>Network</h3>
+      <p><strong>{{ details.cidr }}</strong></p>
+      <p class="muted">Netmask: {{ details.netmask }} (wildcard {{ details.wildcard }})</p>
+    </article>
+    <article class="card">
+      <h3>Range</h3>
+      <p>First host: <code>{{ details.first_host }}</code></p>
+      <p>Last host: <code>{{ details.last_host }}</code></p>
+    </article>
+    <article class="card">
+      <h3>Broadcast</h3>
+      <p><code>{{ details.broadcast }}</code></p>
+      <p class="muted">Usable hosts: {{ details.hosts }}</p>
+    </article>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
