@@ -1,0 +1,27 @@
+{
+  "fabric_name": "example_fabric",
+  "spines": [
+    {"name": "spine-1", "management_ip": "10.0.0.11"},
+    {"name": "spine-2", "management_ip": "10.0.0.12"}
+  ],
+  "leafs": [
+    {"name": "leaf-1", "management_ip": "10.0.0.21"},
+    {"name": "leaf-2", "management_ip": "10.0.0.22"},
+    {"name": "leaf-3", "management_ip": "10.0.0.23"},
+    {"name": "leaf-4", "management_ip": "10.0.0.24"},
+    {"name": "leaf-5", "management_ip": "10.0.0.25"},
+    {"name": "leaf-6", "management_ip": "10.0.0.26"},
+    {"name": "leaf-7", "management_ip": "10.0.0.27"},
+    {"name": "leaf-8", "management_ip": "10.0.0.28"}
+  ],
+  "border_leafs": [
+    {
+      "pair_name": "border-1",
+      "vpc_id": 101,
+      "members": [
+        {"name": "border-1a", "management_ip": "10.0.0.101"},
+        {"name": "border-1b", "management_ip": "10.0.0.102"}
+      ]
+    }
+  ]
+}
