@@ -1,0 +1,13 @@
+body {
+  min-height: 100vh;
+}
+
+dt {
+  font-weight: 600;
+}
+
+code {
+  background-color: #f8f9fa;
+  padding: 0.1rem 0.25rem;
+  border-radius: 0.25rem;
+}
