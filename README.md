@@ -112,6 +112,40 @@ python -m compileall app
 
 This compiles the Python modules and catches syntax errors early.
 
+## Running with Podman
+
+You can containerize the application using [Podman](https://podman.io/) with the provided helper script.
+
+1. Ensure Podman is installed and that your user can run rootless containers.
+2. From the project root, execute:
+
+   ```bash
+   ./scripts/run_podman.sh
+   ```
+
+   The script builds the image from the `Containerfile`, provisions a persistent volume for the SQLite database, and starts the service on port `8000`.
+
+3. Visit http://127.0.0.1:8000 to access the UI. Use `Ctrl+C` in the terminal to stop the container.
+
+### Customizing the Podman run
+
+The script honors a few optional environment variables:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `IMAGE_NAME` | `ipam-app` | Image tag produced during `podman build`. |
+| `CONTAINER_NAME` | `ipam-app` | Name assigned to the running container. |
+| `HOST_PORT` | `8000` | Host port exposed for the FastAPI server. |
+| `DB_VOLUME` | `ipam-db` | Podman volume used to persist the SQLite database. |
+
+For example, to run on port 9000 with a custom image name:
+
+```bash
+HOST_PORT=9000 IMAGE_NAME=company/ipam ./scripts/run_podman.sh
+```
+
+The application reads the `IPAM_DB_PATH` environment variable, so you can map the database to a different location or volume if needed.
+
 ## License
 
 This project is provided as-is for demonstration and educational purposes.

@@ -1,9 +1,27 @@
 from contextlib import contextmanager
+import os
+from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "sqlite:///./ipam.db"
+DEFAULT_DB_PATH = Path("ipam.db")
+
+
+def _resolve_database_url() -> str:
+    db_path = os.getenv("IPAM_DB_PATH")
+    if not db_path:
+        return f"sqlite:///{DEFAULT_DB_PATH.resolve()}"
+
+    resolved = Path(db_path)
+    if not resolved.is_absolute():
+        resolved = Path.cwd() / resolved
+
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{resolved}"
+
+
+DATABASE_URL = _resolve_database_url()
 
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}
