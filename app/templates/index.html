@@ -20,6 +20,7 @@
             <div class="card-body">
               <h2 class="h4">IPv4 Calculator</h2>
               <form method="post" class="mb-3">
+                <input type="hidden" name="form_type" value="ipv4">
                 <div class="mb-3">
                   <label for="ipv4_network" class="form-label">Network (e.g. 192.168.1.0/24)</label>
                   <input type="text" class="form-control" id="ipv4_network" name="ipv4_network" placeholder="192.168.1.0/24" value="{{ request.form.get('ipv4_network', '') }}">
@@ -48,6 +49,7 @@
             <div class="card-body">
               <h2 class="h4">IPv6 Calculator</h2>
               <form method="post" class="mb-3">
+                <input type="hidden" name="form_type" value="ipv6">
                 <div class="mb-3">
                   <label for="ipv6_network" class="form-label">Network (e.g. 2001:db8::/64)</label>
                   <input type="text" class="form-control" id="ipv6_network" name="ipv6_network" placeholder="2001:db8::/64" value="{{ request.form.get('ipv6_network', '') }}">
@@ -67,6 +69,101 @@
                 </dl>
               {% else %}
                 <p class="text-muted">Enter a network in CIDR notation to view IPv6 subnet details.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 mt-1">
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h2 class="h4">IPv4 VLSM Planner</h2>
+              <p class="text-muted">Break down a larger IPv4 network into subnets that match the size of each department.</p>
+              <form method="post" class="mb-3">
+                <input type="hidden" name="form_type" value="vlsm">
+                <div class="mb-3">
+                  <label for="vlsm_base_network" class="form-label">Base network (e.g. 10.0.0.0/24)</label>
+                  <input type="text" class="form-control" id="vlsm_base_network" name="vlsm_base_network" placeholder="10.0.0.0/24" value="{{ request.form.get('vlsm_base_network', '') }}">
+                  <div class="form-text">The network you want to subdivide using VLSM.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="vlsm_requirements" class="form-label">Department requirements</label>
+                  <textarea class="form-control" id="vlsm_requirements" name="vlsm_requirements" rows="5" placeholder="Sales: 50\nEngineering: 120\nHR, 25\nGuest WiFi 30">{{ request.form.get('vlsm_requirements', '') }}</textarea>
+                  <div class="form-text">Enter one department per line. Separate the name and host count with a colon or comma. Lines with just a number are also accepted.</div>
+                </div>
+                <button type="submit" class="btn btn-warning">Calculate VLSM Plan</button>
+              </form>
+              {% if vlsm_error %}
+                <div class="alert alert-danger" role="alert">
+                  {{ vlsm_error }}
+                </div>
+              {% elif vlsm_result %}
+                <div class="row mb-3">
+                  <div class="col-md-4">
+                    <div class="summary-tile bg-light border rounded p-3 h-100">
+                      <h3 class="h6 text-uppercase text-muted">Base Network</h3>
+                      <p class="mb-1"><code>{{ vlsm_result.base_network }}</code></p>
+                      <small class="text-muted">{{ vlsm_result.total_addresses }} addresses total</small>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="summary-tile bg-light border rounded p-3 h-100">
+                      <h3 class="h6 text-uppercase text-muted">Requested Hosts</h3>
+                      <p class="mb-1 fw-semibold">{{ vlsm_result.requested_hosts }}</p>
+                      <small class="text-muted">Across {{ vlsm_result.allocations|length }} departments</small>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="summary-tile bg-light border rounded p-3 h-100">
+                      <h3 class="h6 text-uppercase text-muted">Unused Addresses</h3>
+                      <p class="mb-1 fw-semibold">{{ vlsm_result.remaining_addresses }}</p>
+                      <small class="text-muted">Available for future growth</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table table-sm table-striped align-middle">
+                    <thead>
+                      <tr>
+                        <th scope="col">Department</th>
+                        <th scope="col" class="text-end">Requested Hosts</th>
+                        <th scope="col">Allocated Subnet</th>
+                        <th scope="col">Netmask</th>
+                        <th scope="col" class="text-end">Usable Hosts</th>
+                        <th scope="col">Host Range</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for allocation in vlsm_result.allocations %}
+                        <tr>
+                          <td>{{ allocation.name }}</td>
+                          <td class="text-end">{{ allocation.requested_hosts }}</td>
+                          <td><code>{{ allocation.network }}</code></td>
+                          <td><code>{{ allocation.netmask }}</code></td>
+                          <td class="text-end">{{ allocation.usable_hosts }}</td>
+                          <td><code>{{ allocation.first_host }}</code> – <code>{{ allocation.last_host }}</code></td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+
+                {% if vlsm_result.remaining_networks %}
+                  <div class="alert alert-info mt-3" role="alert">
+                    <h3 class="h6 mb-2">Remaining address space</h3>
+                    <p class="mb-2">You still have {{ vlsm_result.remaining_addresses }} addresses left inside {{ vlsm_result.base_network }}:</p>
+                    <ul class="mb-0">
+                      {% for network in vlsm_result.remaining_networks %}
+                        <li><code>{{ network }}</code></li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+              {% else %}
+                <p class="text-muted">Enter your base network and each department's host count to generate a VLSM plan.</p>
               {% endif %}
             </div>
           </div>

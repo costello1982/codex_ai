@@ -6,6 +6,7 @@ A lightweight Flask web application for calculating IPv4 and IPv6 subnet details
 
 - IPv4 subnet calculator with network address, netmask, broadcast, host ranges, and host counts.
 - IPv6 subnet calculator with compressed/expanded representations, host totals, and scope indicators.
+- IPv4 VLSM planner to divide a larger network across departments based on host needs.
 - Curated cheat sheet covering private/public ranges and other quick reference facts for IPv4 and IPv6.
 - Responsive interface built with Bootstrap.
 
@@ -54,6 +55,23 @@ A lightweight Flask web application for calculating IPv4 and IPv6 subnet details
 ### Configuration
 
 The default configuration exposes the Flask server on port 8000 and listens on all interfaces. Adjust port mappings as needed when running in Podman.
+
+### Using the VLSM Planner
+
+1. Open the **IPv4 VLSM Planner** card in the UI.
+2. Enter the IPv4 network you want to subdivide (for example, `10.0.0.0/22`).
+3. Provide each department's host requirement on a separate line. You can use `Department: hosts`, `Department, hosts`, or just a number. Example:
+
+   ```
+   Sales: 50
+   Engineering: 120
+   HR, 25
+   30
+   ```
+
+4. Submit the form to see the calculated subnets, the usable host range for each allocation, and any leftover address space inside the base network.
+
+> **Tip:** Requirements are automatically sorted from largest to smallest so that the planner finds space-efficient allocations first.
 
 ### Project Structure
 
