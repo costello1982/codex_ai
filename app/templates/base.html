@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}IPAM{% endblock %}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container">
+        <h1 class="logo">IP Address Manager</h1>
+        <nav>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/calculator">Subnet Calculator</a>
+          <a href="/subnets/new">New Subnet</a>
+          <a href="/logout" class="logout">Logout</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">
+      <div class="container">
+        <p>Logged in as <strong>{{ user.username }}</strong></p>
+        <p>&copy; {{ now().year }} IPAM Demo</p>
+      </div>
+    </footer>
+  </body>
+</html>
