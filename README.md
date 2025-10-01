@@ -125,10 +125,16 @@ You can containerize the application using [Podman](https://podman.io/) with the
      ./scripts/run_podman.sh
      ```
 
-   - **Windows (PowerShell 7+):**
+   - **Windows (PowerShell):**
 
      ```powershell
-     pwsh ./scripts/run_podman.ps1
+     powershell -ExecutionPolicy Bypass -File .\scripts\run_podman.ps1
+     ```
+
+     If you prefer double-click or `cmd.exe` workflows, a convenience wrapper is also available:
+
+     ```cmd
+     scripts\run_podman.cmd
      ```
 
    Both scripts build the image from the `Containerfile`, provisions a persistent volume for the SQLite database, and start the service on port `8000`.
@@ -149,7 +155,7 @@ The scripts honor a few optional environment variables:
 On PowerShell you can also supply these values as named parameters, for example:
 
 ```powershell
-pwsh ./scripts/run_podman.ps1 -HostPort 9000 -ImageName company/ipam
+powershell -ExecutionPolicy Bypass -File .\scripts\run_podman.ps1 -HostPort 9000 -ImageName company/ipam
 ```
 
 For example, to run on port 9000 with a custom image name:
