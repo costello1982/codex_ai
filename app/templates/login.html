@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login &middot; IPAM</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" />
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}" />
+  </head>
+  <body class="login-page">
+    <div class="login-card">
+      <h1>IP Address Manager</h1>
+      <p class="muted">Sign in with your administrator account.</p>
+      {% if message %}
+      <div class="alert">{{ message }}</div>
+      {% endif %}
+      <form action="/login" method="post" class="form">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          value="{{ username or '' }}"
+          placeholder="admin"
+          required
+        />
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••" required />
+
+        <button type="submit" class="button">Sign in</button>
+      </form>
+      <p class="muted small">Default credentials: admin / changeme</p>
+    </div>
+  </body>
+</html>
