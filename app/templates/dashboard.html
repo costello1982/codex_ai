@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · IPAM{% endblock %}
+{% block content %}
+<section class="panel">
+  <header class="panel-header">
+    <div>
+      <h2>Your Subnets</h2>
+      <p class="muted">Track usage and jump into subnet details.</p>
+    </div>
+    <div class="actions">
+      <a class="button" href="/subnets/new">Add subnet</a>
+      <a class="button secondary" href="/calculator">Open calculator</a>
+    </div>
+  </header>
+  {% if subnets %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>CIDR</th>
+        <th>Description</th>
+        <th>Capacity</th>
+        <th>Allocated</th>
+        <th>Available</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for subnet in subnets %}
+      {% set allocated = subnet.ip_addresses | length %}
+      {% set available = subnet.capacity - allocated %}
+      <tr>
+        <td><code>{{ subnet.cidr }}</code></td>
+        <td>{{ subnet.description or "—" }}</td>
+        <td>{{ subnet.capacity }}</td>
+        <td>{{ allocated }}</td>
+        <td class="{{ 'danger' if available <= 0 else '' }}">{{ available }}</td>
+        <td><a class="button small" href="/subnets/{{ subnet.id }}">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No subnets yet. <a href="/subnets/new">Create your first subnet</a>.</p>
+  {% endif %}
+</section>
+{% endblock %}
