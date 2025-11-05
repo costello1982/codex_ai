@@ -1,0 +1,132 @@
+{#
+  Jinja2 template that creates a production-ready bootstrap configuration
+  for a Nexus VXLAN EVPN device. The Python script feeds role specific
+  variables so we can keep logic here minimal. Jinja comments like this one
+  are stripped from the rendered output.
+#}
+!
+hostname {{ device.name }}
+!
+interface loopback0
+  description *** VXLAN Loopback for {{ fabric_name }} ***
+  ip address {{ device.loopback_ip }} 255.255.255.255
+!
+{% if device.role in ["leaf", "border_leaf", "border_gateway"] %}
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+feature ospf
+feature bgp
+feature pim
+feature lacp
+feature vpc
+feature dhcp
+feature telemetry
+{% elif device.role == "spine" %}
+feature ospf
+feature bgp
+feature pim
+feature telemetry
+{% endif %}
+!
+vrf context management
+  ip route 0.0.0.0/0 {{ device.default_route | default('10.0.0.1') }}
+!
+{% if device.role in ["leaf", "border_leaf", "border_gateway"] %}
+interface nve1
+  no shutdown
+  source-interface loopback0
+  host-reachability protocol bgp
+  member vni 0-16777215 ingress-replication
+    protocol bgp
+  mcast-group {{ multicast_group }}
+{% endif %}
+!
+router ospf UNDERLAY
+  router-id {{ device.loopback_ip }}
+  log-adjacency-changes detail
+{% for link in device.uplinks %}
+interface {{ link.interface }}
+  description *** to {{ link.peer }} {{ link.peer_interface }} ***
+  no switchport
+  ip unnumbered loopback0
+  ip router ospf UNDERLAY area 0.0.0.0
+{% if link.get('bfd', true) %}  ip ospf bfd{% endif %}
+  no shutdown
+{% endfor %}
+!
+router bgp {{ bgp_asn }}
+  router-id {{ device.loopback_ip }}
+  address-family ipv4 unicast
+    maximum-paths 4
+{% if device.role == "spine" %}
+  template peer LEAFS
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+  address-family l2vpn evpn
+    retain route-target all
+{% for neighbor in device.downlinks %}
+  neighbor {{ neighbor.ip }}
+    inherit peer LEAFS
+    description *** to {{ neighbor.name }} ***
+{% endfor %}
+{% else %}
+  template peer SPINES
+    remote-as {{ bgp_asn }}
+    update-source loopback0
+  address-family l2vpn evpn
+    advertise-all-vni
+    retain route-target all
+{% for rr in evpn_rrs %}
+  neighbor {{ rr }}
+    inherit peer SPINES
+    description *** EVPN RR {{ rr }} ***
+    address-family l2vpn evpn
+{% endfor %}
+{% endif %}
+!
+{% if device.role in ["leaf", "border_leaf", "border_gateway"] and device.get('vpc') %}
+vpc domain {{ device.vpc.domain_id }}
+  peer-keepalive destination {{ device.vpc_peer_mgmt_ip }} source {{ device.mgmt_ip }}
+  system-priority 32000
+  role priority {{ device.vpc_role_priority }}
+  peer-gateway
+  ip arp synchronize
+  auto-recovery reload-delay 240
+  graceful-consistency-check
+{% endif %}
+!
+{% if device.get('access_ports') %}
+{% for access in device.access_ports %}
+interface {{ access.interface }}
+  description *** {{ access.description }} ***
+  switchport
+  switchport mode trunk
+  spanning-tree port type edge trunk
+  mtu 9216
+  no shutdown
+{% endfor %}
+{% endif %}
+!
+{% if device.get('external') %}
+{% for ext in device.external %}
+interface {{ ext.interface }}
+  description *** {{ ext.description }} ***
+  no switchport
+  ip address dhcp
+  no shutdown
+{% endfor %}
+{% endif %}
+!
+{% if device.role in ["border_leaf", "border_gateway"] %}
+router bgp {{ bgp_asn }}
+  vrf INTERNET
+    address-family ipv4 unicast
+      redistribute connected
+{% endif %}
+!
+line console
+  exec-timeout 15
+  logging synchronous
+!
+end

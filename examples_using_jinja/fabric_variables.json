@@ -1,0 +1,110 @@
+{
+  "fabric_name": "dc1_vxlan_evpn",
+  "bgp_asn": 65001,
+  "evpn_rrs": ["spine01", "spine02"],
+  "multicast_group": "239.1.1.1",
+  "loopback_prefix": "10.255.0.0/24",
+  "devices": [
+    {
+      "name": "leaf01",
+      "role": "leaf",
+      "mgmt_ip": "10.0.0.11",
+      "loopback_id": 1,
+      "uplinks": [
+        {"interface": "Ethernet1/1", "peer": "spine01", "peer_interface": "Ethernet1/1"},
+        {"interface": "Ethernet1/2", "peer": "spine02", "peer_interface": "Ethernet1/2"}
+      ],
+      "access_ports": [
+        {"interface": "Ethernet1/10", "description": "ServerA"}
+      ],
+      "vpc": {
+        "domain_id": 10,
+        "peer": "leaf02"
+      }
+    },
+    {
+      "name": "leaf02",
+      "role": "leaf",
+      "mgmt_ip": "10.0.0.12",
+      "loopback_id": 2,
+      "uplinks": [
+        {"interface": "Ethernet1/1", "peer": "spine01", "peer_interface": "Ethernet1/3"},
+        {"interface": "Ethernet1/2", "peer": "spine02", "peer_interface": "Ethernet1/4"}
+      ],
+      "access_ports": [
+        {"interface": "Ethernet1/10", "description": "ServerB"}
+      ],
+      "vpc": {
+        "domain_id": 10,
+        "peer": "leaf01"
+      }
+    },
+    {
+      "name": "spine01",
+      "role": "spine",
+      "mgmt_ip": "10.0.0.21",
+      "loopback_id": 101,
+      "uplinks": [
+        {"interface": "Ethernet1/1", "peer": "leaf01", "peer_interface": "Ethernet1/1"},
+        {"interface": "Ethernet1/3", "peer": "leaf02", "peer_interface": "Ethernet1/1"}
+      ]
+    },
+    {
+      "name": "spine02",
+      "role": "spine",
+      "mgmt_ip": "10.0.0.22",
+      "loopback_id": 102,
+      "uplinks": [
+        {"interface": "Ethernet1/2", "peer": "leaf01", "peer_interface": "Ethernet1/2"},
+        {"interface": "Ethernet1/4", "peer": "leaf02", "peer_interface": "Ethernet1/2"}
+      ]
+    },
+    {
+      "name": "border_leaf01",
+      "role": "border_leaf",
+      "mgmt_ip": "10.0.0.31",
+      "loopback_id": 201,
+      "uplinks": [
+        {"interface": "Ethernet1/1", "peer": "spine01", "peer_interface": "Ethernet1/5"},
+        {"interface": "Ethernet1/2", "peer": "spine02", "peer_interface": "Ethernet1/5"}
+      ],
+      "external": [
+        {"interface": "Ethernet1/48", "description": "Edge-Router-1"}
+      ],
+      "vpc": {
+        "domain_id": 101,
+        "peer": "border_leaf02"
+      }
+    },
+    {
+      "name": "border_leaf02",
+      "role": "border_leaf",
+      "mgmt_ip": "10.0.0.32",
+      "loopback_id": 202,
+      "uplinks": [
+        {"interface": "Ethernet1/1", "peer": "spine01", "peer_interface": "Ethernet1/6"},
+        {"interface": "Ethernet1/2", "peer": "spine02", "peer_interface": "Ethernet1/6"}
+      ],
+      "external": [
+        {"interface": "Ethernet1/48", "description": "Edge-Router-2"}
+      ],
+      "vpc": {
+        "domain_id": 101,
+        "peer": "border_leaf01"
+      }
+    },
+    {
+      "name": "border_gateway01",
+      "role": "border_gateway",
+      "mgmt_ip": "10.0.0.41",
+      "loopback_id": 301,
+      "uplinks": [
+        {"interface": "Ethernet1/1", "peer": "spine01", "peer_interface": "Ethernet1/7"},
+        {"interface": "Ethernet1/2", "peer": "spine02", "peer_interface": "Ethernet1/7"}
+      ],
+      "external": [
+        {"interface": "Ethernet1/49", "description": "WAN-Router"}
+      ]
+    }
+  ]
+}
