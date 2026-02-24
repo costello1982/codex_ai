@@ -1,5 +1,7 @@
 # FRR DC VXLAN EVPN (containerlab)
 
+> New to EVPN? Start with `Introduction.md` for a beginner walkthrough.
+
 This repository contains a ready-to-use **containerlab** project for a small data-center fabric built with **FRR**:
 
 - 2x Spine routers (FRR)
