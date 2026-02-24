@@ -1,0 +1,31 @@
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# Allow established/related
+-A FORWARD -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow Blue VRF client traffic to WAN (eth3)
+-A FORWARD -i eth1 -o eth3 -j ACCEPT
+
+# Allow Red VRF client traffic to WAN (eth3)
+-A FORWARD -i eth2 -o eth3 -j ACCEPT
+
+# Allow Blue <-> Red for lab validation (remove when hardening)
+-A FORWARD -i eth1 -o eth2 -j ACCEPT
+-A FORWARD -i eth2 -o eth1 -j ACCEPT
+
+COMMIT
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+# NAT both VRFs to outside interface
+-A POSTROUTING -s 10.10.10.0/24 -o eth3 -j MASQUERADE
+-A POSTROUTING -s 10.20.20.0/24 -o eth3 -j MASQUERADE
+
+COMMIT

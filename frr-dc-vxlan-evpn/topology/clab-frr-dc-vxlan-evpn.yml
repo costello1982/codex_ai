@@ -1,0 +1,66 @@
+name: frr-dc-vxlan-evpn
+
+topology:
+  defaults:
+    kind: linux
+    image: frrouting/frr:v9.1.0
+
+  nodes:
+    spine1:
+      binds:
+        - ../configs/spine1/frr.conf:/etc/frr/frr.conf
+    spine2:
+      binds:
+        - ../configs/spine2/frr.conf:/etc/frr/frr.conf
+
+    leaf1:
+      binds:
+        - ../configs/leaf1/frr.conf:/etc/frr/frr.conf
+      exec:
+        - /bin/bash -c '/workspace/scripts/setup-leaf-vrfs.sh leaf1'
+    leaf2:
+      binds:
+        - ../configs/leaf2/frr.conf:/etc/frr/frr.conf
+      exec:
+        - /bin/bash -c '/workspace/scripts/setup-leaf-vrfs.sh leaf2'
+    leaf3:
+      binds:
+        - ../configs/leaf3/frr.conf:/etc/frr/frr.conf
+      exec:
+        - /bin/bash -c '/workspace/scripts/setup-leaf-vrfs.sh leaf3'
+
+    edge1:
+      binds:
+        - ../configs/edge1/frr.conf:/etc/frr/frr.conf
+
+    fw1:
+      binds:
+        - ../configs/fw1/frr.conf:/etc/frr/frr.conf
+        - ../firewall/iptables.rules.v4:/workspace/firewall/iptables.rules.v4
+      exec:
+        - /bin/bash -c '/workspace/scripts/setup-firewall.sh'
+
+    client1:
+      binds:
+        - ../configs/client1/frr.conf:/etc/frr/frr.conf
+    client2:
+      binds:
+        - ../configs/client2/frr.conf:/etc/frr/frr.conf
+
+  links:
+    - endpoints: ["spine1:eth1", "leaf1:eth1"]
+    - endpoints: ["spine2:eth1", "leaf1:eth2"]
+    - endpoints: ["spine1:eth2", "leaf2:eth1"]
+    - endpoints: ["spine2:eth2", "leaf2:eth2"]
+    - endpoints: ["spine1:eth3", "leaf3:eth1"]
+    - endpoints: ["spine2:eth3", "leaf3:eth2"]
+
+    - endpoints: ["leaf1:eth3", "edge1:eth1"]
+
+    - endpoints: ["leaf1:eth4", "fw1:eth1"] # VRF BLUE transit
+    - endpoints: ["leaf1:eth5", "fw1:eth2"] # VRF RED transit
+    - endpoints: ["leaf1:eth6", "fw1:eth3"] # outside transit
+
+    - endpoints: ["leaf1:eth7", "client1:eth1"]
+    - endpoints: ["leaf2:eth3", "client1:eth2"]
+    - endpoints: ["leaf3:eth3", "client2:eth1"]
