@@ -1,0 +1,13 @@
+hostname {{ device.name }}
+feature bgp
+feature nv overlay
+interface loopback0
+  ip address {{ device.loopback0 }}
+router bgp {{ device.asn }}
+  router-id {{ device.router_id }}
+  address-family l2vpn evpn
+{% for link in links %}
+interface {{ link.peer_intf }}
+  no switchport
+  ip address {{ link.peer_ip }}
+{% endfor %}

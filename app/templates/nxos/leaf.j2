@@ -1,0 +1,18 @@
+hostname {{ device.name }}
+feature bgp
+feature nv overlay
+feature vn-segment-vlan-based
+fabric forwarding anycast-gateway-mac {{ design.allocation_pools.anycast_gateway_mac }}
+interface loopback0
+  ip address {{ device.loopback0 }}
+interface nve1
+  no shutdown
+  source-interface loopback0
+router bgp {{ device.asn }}
+  router-id {{ device.router_id }}
+{% for tenant in design.tenants %}
+{% for seg in tenant.l2_segments %}
+vlan {{ seg.vlan_id }}
+  vn-segment {{ seg.vni }}
+{% endfor %}
+{% endfor %}

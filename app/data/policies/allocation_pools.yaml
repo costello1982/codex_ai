@@ -1,0 +1,5 @@
+loopback_pool: 10.255.0.0/24
+p2p_pool: 10.254.0.0/24
+vlan_start: 100
+l2vni_start: 10100
+l3vni_start: 20100

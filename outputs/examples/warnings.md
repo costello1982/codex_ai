@@ -1,0 +1,1 @@
+- Validate exact DCI handoff interfaces before deployment.

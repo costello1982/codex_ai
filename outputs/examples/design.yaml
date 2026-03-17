@@ -1,0 +1,4 @@
+fabric_name: fab1
+site:
+  site_name: dc1
+  site_id: 101

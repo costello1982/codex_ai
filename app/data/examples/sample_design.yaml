@@ -1,0 +1,13 @@
+fabric_name: fab1
+site:
+  site_name: dc1
+  site_id: 101
+  underlay_protocol: ebgp
+spine_count: 2
+regular_leaf_count: 4
+border_leaf_count: 2
+vpc_pair_count: 1
+interconnect:
+  enabled: true
+  remote_site_name: dc2
+  mode: evpn_dci

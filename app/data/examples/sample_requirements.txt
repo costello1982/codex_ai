@@ -1,0 +1,4 @@
+Create a VXLAN EVPN data center with 2 spine switches, 8 leaf switches total,
+2 of the leafs acting as border leafs / border gateways,
+1 pair of leafs acting as a vPC pair,
+interconnect to another VXLAN EVPN data center.

@@ -1,0 +1,2 @@
+- site_id defaulted to 101
+- overlay ASN defaulted to 65000 from global policy
