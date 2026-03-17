@@ -1,0 +1,7 @@
+fabric_name: fab1
+site_name: dc1
+site_id: 101
+underlay_protocol: ebgp
+overlay_asn: 65000
+spine_asn: 65100
+anycast_gateway_mac: "0001.0001.0001"

@@ -1,0 +1,11 @@
+hostname {{ device.name }}
+! Border leaf / DCI capable
+feature bgp
+feature nv overlay
+interface loopback0
+  ip address {{ device.loopback0 }}
+router bgp {{ device.asn }}
+  router-id {{ device.router_id }}
+  address-family l2vpn evpn
+! Site ID enforced by policy: {{ device.site_id }}
+! DCI placeholders for remote interconnect

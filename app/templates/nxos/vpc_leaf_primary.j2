@@ -1,0 +1,8 @@
+hostname {{ device.name }}
+! vPC Primary
+feature vpc
+vpc domain {{ device.vpc_domain_id }}
+  role priority 10
+feature bgp
+interface loopback0
+  ip address {{ device.loopback0 }}

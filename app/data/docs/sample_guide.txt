@@ -1,0 +1,4 @@
+Cisco NX-OS VXLAN EVPN guide excerpt.
+Use spines for route-reflector or underlay peering.
+Border leafs provide DCI interconnect and site-id aware handling.
+vPC pairs should have aligned domain id and peer-link.

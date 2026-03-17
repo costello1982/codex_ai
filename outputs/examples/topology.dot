@@ -1,0 +1,13 @@
+graph fabric {
+  "spine1";
+  "spine2";
+  "bl1";
+  "bl2";
+  "vpc1a";
+  "vpc1b";
+  "leaf1";
+  "leaf2";
+  "leaf3";
+  "leaf4";
+  "remote-dc";
+}
