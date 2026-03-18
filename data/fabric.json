@@ -1,0 +1,134 @@
+{
+  "fabric": {
+    "name": "dc1-fabric",
+    "ospf_process": 100,
+    "overlay_asn": 65000,
+    "underlay_area": "0.0.0.0",
+    "loopback_pool": "10.255.0.0/24",
+    "bgp_listen_subnet": "10.255.0.0/24",
+    "vlan_to_vni": [
+      {"vlan": 10, "name": "WEB", "vni": 10010, "svi": "10.10.10.1/24", "vrf": "TENANT_A"},
+      {"vlan": 20, "name": "APP", "vni": 10020, "svi": "10.10.20.1/24", "vrf": "TENANT_A"},
+      {"vlan": 30, "name": "DB", "vni": 10030, "svi": "10.10.30.1/24", "vrf": "TENANT_A"}
+    ],
+    "vrfs": [
+      {"name": "TENANT_A", "vni": 50000, "rt": "65000:50000", "rd": "auto"}
+    ]
+  },
+  "devices": [
+    {
+      "name": "spine1",
+      "role": "spine",
+      "mgmt_ip": "192.0.2.11",
+      "loopback0": "10.255.0.11/32",
+      "router_id": "10.255.0.11",
+      "asn": 65000,
+      "interfaces": [
+        {"name": "Ethernet1/1", "peer": "leaf1", "peer_intf": "Ethernet1/49", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/2", "peer": "leaf2", "peer_intf": "Ethernet1/49", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/3", "peer": "bleaf1", "peer_intf": "Ethernet1/49", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/4", "peer": "bleaf2", "peer_intf": "Ethernet1/49", "ospf_network_type": "point-to-point"}
+      ]
+    },
+    {
+      "name": "spine2",
+      "role": "spine",
+      "mgmt_ip": "192.0.2.12",
+      "loopback0": "10.255.0.12/32",
+      "router_id": "10.255.0.12",
+      "asn": 65000,
+      "interfaces": [
+        {"name": "Ethernet1/1", "peer": "leaf1", "peer_intf": "Ethernet1/50", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/2", "peer": "leaf2", "peer_intf": "Ethernet1/50", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/3", "peer": "bleaf1", "peer_intf": "Ethernet1/50", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/4", "peer": "bleaf2", "peer_intf": "Ethernet1/50", "ospf_network_type": "point-to-point"}
+      ]
+    },
+    {
+      "name": "leaf1",
+      "role": "leaf",
+      "mgmt_ip": "192.0.2.21",
+      "loopback0": "10.255.0.21/32",
+      "router_id": "10.255.0.21",
+      "anycast_gateway_mac": "0000.1111.2222",
+      "asn": 65101,
+      "vpc": {
+        "domain": 10,
+        "peer_keepalive_src": "192.0.2.21",
+        "peer_keepalive_dst": "192.0.2.22",
+        "peer_link_po": 10,
+        "peer_link_members": ["Ethernet1/47"],
+        "member_port_channels": [
+          {"id": 101, "description": "to-esxi-cluster", "members": ["Ethernet1/10", "Ethernet1/11"], "vlan": "10,20,30"}
+        ]
+      },
+      "interfaces": [
+        {"name": "Ethernet1/49", "peer": "spine1", "peer_intf": "Ethernet1/1", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/50", "peer": "spine2", "peer_intf": "Ethernet1/1", "ospf_network_type": "point-to-point"}
+      ]
+    },
+    {
+      "name": "leaf2",
+      "role": "leaf",
+      "mgmt_ip": "192.0.2.22",
+      "loopback0": "10.255.0.22/32",
+      "router_id": "10.255.0.22",
+      "anycast_gateway_mac": "0000.1111.2222",
+      "asn": 65101,
+      "vpc": {
+        "domain": 10,
+        "peer_keepalive_src": "192.0.2.22",
+        "peer_keepalive_dst": "192.0.2.21",
+        "peer_link_po": 10,
+        "peer_link_members": ["Ethernet1/47"],
+        "member_port_channels": [
+          {"id": 101, "description": "to-esxi-cluster", "members": ["Ethernet1/10", "Ethernet1/11"], "vlan": "10,20,30"}
+        ]
+      },
+      "interfaces": [
+        {"name": "Ethernet1/49", "peer": "spine1", "peer_intf": "Ethernet1/2", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/50", "peer": "spine2", "peer_intf": "Ethernet1/2", "ospf_network_type": "point-to-point"}
+      ]
+    },
+    {
+      "name": "bleaf1",
+      "role": "border_leaf",
+      "mgmt_ip": "192.0.2.31",
+      "loopback0": "10.255.0.31/32",
+      "router_id": "10.255.0.31",
+      "asn": 65131,
+      "border_gateway": {
+        "dci_port_channel": 131,
+        "dci_members": ["Ethernet1/55", "Ethernet1/56"],
+        "peer": "bleaf2",
+        "peer_ip": "172.16.100.2/31",
+        "local_ip": "172.16.100.1/31",
+        "peer_as": 65200
+      },
+      "interfaces": [
+        {"name": "Ethernet1/49", "peer": "spine1", "peer_intf": "Ethernet1/3", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/50", "peer": "spine2", "peer_intf": "Ethernet1/3", "ospf_network_type": "point-to-point"}
+      ]
+    },
+    {
+      "name": "bleaf2",
+      "role": "border_leaf",
+      "mgmt_ip": "192.0.2.32",
+      "loopback0": "10.255.0.32/32",
+      "router_id": "10.255.0.32",
+      "asn": 65132,
+      "border_gateway": {
+        "dci_port_channel": 132,
+        "dci_members": ["Ethernet1/55", "Ethernet1/56"],
+        "peer": "bleaf1",
+        "peer_ip": "172.16.100.1/31",
+        "local_ip": "172.16.100.2/31",
+        "peer_as": 65200
+      },
+      "interfaces": [
+        {"name": "Ethernet1/49", "peer": "spine1", "peer_intf": "Ethernet1/4", "ospf_network_type": "point-to-point"},
+        {"name": "Ethernet1/50", "peer": "spine2", "peer_intf": "Ethernet1/4", "ospf_network_type": "point-to-point"}
+      ]
+    }
+  ]
+}

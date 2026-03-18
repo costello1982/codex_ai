@@ -1,0 +1,29 @@
+testbed:
+  name: nxos-fabric
+
+devices:
+  spine1:
+    alias: spine1
+    os: nxos
+    type: switch
+    connections:
+      cli:
+        protocol: ssh
+        ip: 192.0.2.11
+    credentials:
+      default:
+        username: admin
+        password: admin
+
+  leaf1:
+    alias: leaf1
+    os: nxos
+    type: switch
+    connections:
+      cli:
+        protocol: ssh
+        ip: 192.0.2.21
+    credentials:
+      default:
+        username: admin
+        password: admin

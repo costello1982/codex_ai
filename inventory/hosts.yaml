@@ -1,0 +1,24 @@
+spine1:
+  hostname: 192.0.2.11
+  platform: cisco_nxos
+  groups: [spines]
+spine2:
+  hostname: 192.0.2.12
+  platform: cisco_nxos
+  groups: [spines]
+leaf1:
+  hostname: 192.0.2.21
+  platform: cisco_nxos
+  groups: [leafs]
+leaf2:
+  hostname: 192.0.2.22
+  platform: cisco_nxos
+  groups: [leafs]
+bleaf1:
+  hostname: 192.0.2.31
+  platform: cisco_nxos
+  groups: [border_leafs]
+bleaf2:
+  hostname: 192.0.2.32
+  platform: cisco_nxos
+  groups: [border_leafs]
