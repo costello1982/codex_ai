@@ -1,0 +1,9 @@
+spines:
+  data:
+    role: spine
+leafs:
+  data:
+    role: leaf
+border_leafs:
+  data:
+    role: border_leaf

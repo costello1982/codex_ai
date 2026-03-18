@@ -1,0 +1,136 @@
+! Generated for {{ device.name }} ({{ device.role }})
+hostname {{ device.name }}
+feature ospf
+feature bgp
+feature nv overlay
+feature vn-segment-vlan-based
+feature interface-vlan
+{% if device.vpc is defined %}
+feature vpc
+{% endif %}
+
+interface loopback0
+  ip address {{ device.loopback0 }}
+  ip router ospf {{ fabric.ospf_process }} area {{ fabric.underlay_area }}
+
+router ospf {{ fabric.ospf_process }}
+  router-id {{ device.router_id }}
+
+{% for link in device.interfaces %}
+interface {{ link.name }}
+  no switchport
+  medium p2p
+  ip unnumbered loopback0
+  ip ospf network {{ link.ospf_network_type }}
+  ip router ospf {{ fabric.ospf_process }} area {{ fabric.underlay_area }}
+  no shutdown
+{% endfor %}
+
+{% if device.vpc is defined %}
+vpc domain {{ device.vpc.domain }}
+  peer-switch
+  peer-keepalive destination {{ device.vpc.peer_keepalive_dst }} source {{ device.vpc.peer_keepalive_src }} vrf management
+
+interface port-channel{{ device.vpc.peer_link_po }}
+  switchport
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+{% for member in device.vpc.peer_link_members %}
+interface {{ member }}
+  channel-group {{ device.vpc.peer_link_po }} mode active
+{% endfor %}
+
+{% for po in device.vpc.member_port_channels %}
+interface port-channel{{ po.id }}
+  description {{ po.description }}
+  switchport
+  switchport mode trunk
+  switchport trunk allowed vlan {{ po.vlan }}
+  vpc {{ po.id }}
+
+{% for m in po.members %}
+interface {{ m }}
+  channel-group {{ po.id }} mode active
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+{% if device.role != 'spine' %}
+interface nve1
+  no shutdown
+  host-reachability protocol bgp
+  source-interface loopback0
+{% for vlan in fabric.vlan_to_vni %}
+  member vni {{ vlan.vni }}
+    ingress-replication protocol bgp
+{% endfor %}
+
+fabric forwarding anycast-gateway-mac {{ device.anycast_gateway_mac | default('0000.1111.2222') }}
+
+{% for vrf in fabric.vrfs %}
+vrf context {{ vrf.name }}
+  vni {{ vrf.vni }}
+  rd {{ vrf.rd }}
+  address-family ipv4 unicast
+    route-target both {{ vrf.rt }}
+{% endfor %}
+
+{% for vlan in fabric.vlan_to_vni %}
+vlan {{ vlan.vlan }}
+  name {{ vlan.name }}
+  vn-segment {{ vlan.vni }}
+
+interface Vlan{{ vlan.vlan }}
+  no shutdown
+  vrf member {{ vlan.vrf }}
+  ip address {{ vlan.svi }}
+  fabric forwarding mode anycast-gateway
+{% endfor %}
+{% endif %}
+
+router bgp {{ device.asn }}
+  router-id {{ device.router_id }}
+  address-family l2vpn evpn
+
+{% if device.role == 'spine' %}
+  template peer LEAF-EVPN
+    remote-as external
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+      route-reflector-client
+
+  bgp listen range {{ fabric.bgp_listen_subnet }} peer-group LEAF-EVPN
+{% else %}
+  template peer SPINE-EVPN
+    remote-as {{ fabric.overlay_asn }}
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+
+  bgp listen range {{ fabric.loopback_pool }} peer-group SPINE-EVPN
+{% endif %}
+
+{% if device.role == 'border_leaf' and device.border_gateway is defined %}
+interface port-channel{{ device.border_gateway.dci_port_channel }}
+  description DCI-to-remote-border
+  no switchport
+  ip address {{ device.border_gateway.local_ip }}
+  no shutdown
+
+{% for member in device.border_gateway.dci_members %}
+interface {{ member }}
+  channel-group {{ device.border_gateway.dci_port_channel }} mode active
+{% endfor %}
+
+router bgp {{ device.asn }}
+  neighbor {{ device.border_gateway.peer_ip.split('/')[0] }}
+    remote-as {{ device.border_gateway.peer_as }}
+    address-family l2vpn evpn
+      send-community
+      send-community extended
+{% endif %}
